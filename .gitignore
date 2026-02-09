@@ -22,3 +22,6 @@ Thumbs.db
 
 # UV
 .python-version
+
+# Claude settings
+settings.local.json
