@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MapMyPothole - Report potholes in Nagpur">
+    <title>MapMyPothole - Report Potholes</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          crossorigin="anonymous"/>
+
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Back to Home -->
+    <a href="/" class="back-btn" title="Back to home">← Home</a>
+
+    <!-- Report Button -->
+    <button id="reportBtn" class="report-btn" title="Click map to report, or use this button">📍 Report Pothole</button>
+
+    <!-- Geolocation Button -->
+    <button id="geolocateBtn" class="geolocate-btn" title="Center map on your location">🎯 Use My Location</button>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Report a Pothole</h2>
+
+            <div class="modal-section">
+                <p><strong>Location:</strong> <span id="modalCoords">--</span></p>
+                <p id="nearbyWarning" style="display: none;" class="warning">
+                    ⚠️ <strong id="nearbyCount">0</strong> pothole(s) already reported nearby
+                </p>
+            </div>
+
+            <div class="modal-section">
+                <label><strong>Severity:</strong></label>
+                <div class="severity-buttons">
+                    <button class="severity-btn" data-severity="LOW">🟢 Low</button>
+                    <button class="severity-btn" data-severity="MEDIUM">🟡 Medium</button>
+                    <button class="severity-btn" data-severity="DANGEROUS">🔴 Dangerous</button>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <label for="description">Description (optional):</label>
+                <textarea id="description" placeholder="e.g., 'Large crater, water pooling'" rows="3"></textarea>
+            </div>
+
+            <div class="modal-section">
+                <button id="submitBtn" class="submit-btn">Submit Report</button>
+                <button id="cancelBtn" class="cancel-btn">Cancel</button>
+            </div>
+
+            <div id="submitStatus" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div id="statsPanel" class="stats-panel">
+        <h3>📊 Stats</h3>
+        <p>Total: <strong id="totalCount">0</strong></p>
+        <p>🟢 Low: <strong id="lowCount">0</strong></p>
+        <p>🟡 Medium: <strong id="mediumCount">0</strong></p>
+        <p>🔴 Dangerous: <strong id="dangerousCount">0</strong></p>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            crossorigin="anonymous"></script>
+
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>

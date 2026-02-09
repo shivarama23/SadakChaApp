@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MapMyNagpur - Report bad parking zones in Nagpur">
+    <title>MapMyNagpur - Report Bad Parking</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- Back to Home -->
+    <a href="/" class="back-btn" title="Back to home">← Home</a>
+
+    <!-- Report Button -->
+    <button id="reportBtn" class="report-btn report-btn-blue" title="Click map to report">🚗 Report Bad Parking</button>
+
+    <!-- Geolocation Button -->
+    <button id="geolocateBtn" class="geolocate-btn" title="Center map on your location">🎯 Use My Location</button>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Report Bad Parking Zone</h2>
+
+            <div class="modal-section">
+                <p><strong>Location:</strong> <span id="modalCoords">--</span></p>
+                <p id="nearbyWarning" style="display: none;" class="warning">
+                    ⚠️ <strong id="nearbyCount">0</strong> report(s) already exist nearby
+                </p>
+            </div>
+
+            <div class="modal-section">
+                <label><strong>How much does it block traffic?</strong></label>
+                <div class="severity-buttons">
+                    <button class="severity-btn" data-severity="LOW">🟢 Minor</button>
+                    <button class="severity-btn" data-severity="MODERATE">🟡 Partial Block</button>
+                    <button class="severity-btn" data-severity="SEVERE">🔴 Full Block</button>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <label for="description">What's happening? (required):</label>
+                <textarea id="description" placeholder="e.g., 'Cars parked on both sides of main road near Dharampeth, blocks traffic during evening'" rows="3" required></textarea>
+            </div>
+
+            <div class="modal-section">
+                <button id="submitBtn" class="submit-btn submit-btn-blue">Submit Report</button>
+                <button id="cancelBtn" class="cancel-btn">Cancel</button>
+            </div>
+
+            <div id="submitStatus" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Stats Panel -->
+    <div id="statsPanel" class="stats-panel">
+        <h3>🚗 Parking Stats</h3>
+        <p>Total: <strong id="totalCount">0</strong></p>
+        <p>🟢 Minor: <strong id="lowCount">0</strong></p>
+        <p>🟡 Partial: <strong id="mediumCount">0</strong></p>
+        <p>🔴 Full Block: <strong id="dangerousCount">0</strong></p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="parking.js"></script>
+</body>
+</html>
