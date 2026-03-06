@@ -13,11 +13,12 @@ DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localho
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+is_pgbouncer = "pgbouncer=true" in DATABASE_URL
+
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    pool_size=5,
-    max_overflow=10,
+    poolclass=NullPool if is_pgbouncer else None,
     pool_pre_ping=True,
     connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 )
