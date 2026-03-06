@@ -3,195 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MapMyNagpur - Citizen-driven civic reporting for Nagpur. Report potholes and bad parking zones.">
-    <title>MapMyNagpur - Fix Our City Together</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="description" content="SadakChaApp - Citizen-driven civic reporting for Nagpur. SpotHole potholes. KnowParking violations.">
+    <title>SadakChaApp - Spot it. Report it. Fix it.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-
-        .hero-gradient {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            background: #0a0f1a;
+        }
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('assets/hero-illustrations.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(10,15,26,0.92) 0%, rgba(10,15,26,0.7) 40%, rgba(10,15,26,0.3) 70%, rgba(10,15,26,0.1) 100%);
+        }
+        .stats-bar {
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-item {
+            border-right: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-item:last-child {
+            border-right: none;
+        }
+        .btn-orange {
+            background: #f97316;
+            transition: all 0.2s;
+        }
+        .btn-orange:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            border: 1.5px solid #3b82f6;
+            color: #93c5fd;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover {
+            background: rgba(59,130,246,0.1);
         }
         .card-hover {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
         }
-        .glow-orange { box-shadow: 0 0 40px rgba(249, 115, 22, 0.15); }
-        .glow-blue { box-shadow: 0 0 40px rgba(59, 130, 246, 0.15); }
         .pulse-dot {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+            50% { opacity: .4; }
         }
-        .stat-counter {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .grid-bg {
-            background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+
+        /* Mobile: stronger overlay so text is readable over full image */
+        @media (max-width: 768px) {
+            .hero-overlay {
+                background: linear-gradient(to bottom, rgba(10,15,26,0.85) 0%, rgba(10,15,26,0.7) 50%, rgba(10,15,26,0.5) 100%);
+            }
+            .hero-bg {
+                background-position: 70% center;
+            }
+            .stats-bar .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-item {
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+            }
+            .stat-item:nth-last-child(-n+2) {
+                border-bottom: none;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-950 text-white">
+<body class="bg-gray-950 text-white font-sans">
 
     <!-- Nav -->
-    <nav class="fixed top-0 w-full z-50 bg-gray-950 bg-opacity-80 backdrop-filter backdrop-blur-lg border-b border-gray-800">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+    <nav class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-lg border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-sm font-bold">M</div>
-                <span class="text-lg font-bold">MapMyNagpur</span>
+                <div class="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-sm font-bold">S</div>
+                <span class="text-lg font-bold">SadakChaApp</span>
             </div>
             <div class="flex gap-3">
-                <a href="/potholes" class="text-sm text-gray-400 hover:text-white transition px-3 py-2">Potholes</a>
-                <a href="/parking" class="text-sm text-gray-400 hover:text-white transition px-3 py-2">Parking</a>
+                <a href="/potholes" class="text-sm text-gray-400 hover:text-white transition px-3 py-2">SpotHole</a>
+                <a href="/parking" class="text-sm text-gray-400 hover:text-white transition px-3 py-2">KnowParking</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero -->
-    <section class="hero-gradient grid-bg min-h-screen flex items-center pt-20">
-        <div class="max-w-6xl mx-auto px-6 py-20">
-            <div class="max-w-3xl">
-                <div class="flex items-center gap-2 mb-6">
-                    <span class="pulse-dot w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span class="text-sm text-green-400 font-medium">Live in Nagpur</span>
-                </div>
+    <!-- Hero with background illustration -->
+    <section class="hero-section flex flex-col justify-end">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
 
-                <h1 class="text-5xl md:text-7xl font-900 leading-tight mb-6">
-                    Report it.<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">Map it.</span><br>
-                    Fix it.
-                </h1>
+        <!-- Hero content -->
+        <div class="relative z-10 flex-1 flex items-center">
+            <div class="max-w-7xl mx-auto px-6 w-full pt-24">
+                <div class="max-w-xl">
+                    <div class="flex items-center gap-2 mb-5">
+                        <span class="pulse-dot w-2 h-2 bg-green-400 rounded-full"></span>
+                        <span class="text-sm text-green-400 font-medium tracking-wide">Live in Nagpur</span>
+                    </div>
 
-                <p class="text-lg md:text-xl text-gray-400 mb-10 max-w-xl leading-relaxed">
-                    Citizens of Nagpur are mapping civic problems in real-time.
-                    Every pin on the map is evidence that drives action.
-                </p>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+                        Spot it. Report it.<br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">Fix it.</span>
+                    </h1>
 
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a href="/potholes"
-                       class="group flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-400 text-white font-semibold px-8 py-4 rounded-xl transition-all text-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                        Report Pothole
-                    </a>
-                    <a href="/parking"
-                       class="group flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-700 text-white font-semibold px-8 py-4 rounded-xl border border-gray-700 transition-all text-lg">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Report Bad Parking
-                    </a>
+                    <p class="text-lg text-gray-400 max-w-lg leading-relaxed">
+                        Nagpur's citizens are mapping civic problems in real-time.
+                        Every pin is evidence that drives action.
+                    </p>
+
+                    <div class="flex flex-wrap gap-3 mt-8">
+                        <a href="/potholes" class="btn-orange flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-lg text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                            SpotHole
+                        </a>
+                        <a href="/parking" class="btn-outline flex items-center gap-2 font-semibold px-6 py-3 rounded-lg text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            KnowParking
+                        </a>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Live Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16" id="statsGrid">
-                <div class="stat-counter rounded-xl p-5 text-center">
-                    <div class="text-3xl font-bold text-orange-400" id="totalPotholes">-</div>
-                    <div class="text-sm text-gray-500 mt-1">Potholes Reported</div>
-                </div>
-                <div class="stat-counter rounded-xl p-5 text-center">
-                    <div class="text-3xl font-bold text-red-400" id="dangerousPotholes">-</div>
-                    <div class="text-sm text-gray-500 mt-1">Dangerous</div>
-                </div>
-                <div class="stat-counter rounded-xl p-5 text-center">
-                    <div class="text-3xl font-bold text-blue-400" id="totalParking">-</div>
-                    <div class="text-sm text-gray-500 mt-1">Parking Violations</div>
-                </div>
-                <div class="stat-counter rounded-xl p-5 text-center">
-                    <div class="text-3xl font-bold text-green-400" id="totalReports">-</div>
-                    <div class="text-sm text-gray-500 mt-1">Total Reports</div>
+        <!-- Stats bar at bottom of hero -->
+        <div class="relative z-10 px-6 pb-8">
+            <div class="max-w-4xl mx-auto stats-bar rounded-2xl">
+                <div class="grid grid-cols-2 md:grid-cols-4">
+                    <div class="stat-item flex items-center gap-3 px-6 py-5">
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-orange-400" id="totalPotholes">-</div>
+                            <div class="text-xs text-gray-500">Potholes Reported</div>
+                        </div>
+                    </div>
+                    <div class="stat-item flex items-center gap-3 px-6 py-5">
+                        <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-red-400" id="dangerousPotholes">-</div>
+                            <div class="text-xs text-gray-500">Dangerous</div>
+                        </div>
+                    </div>
+                    <div class="stat-item flex items-center gap-3 px-6 py-5">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-blue-400" id="totalParking">-</div>
+                            <div class="text-xs text-gray-500">Parking Violations</div>
+                        </div>
+                    </div>
+                    <div class="stat-item flex items-center gap-3 px-6 py-5">
+                        <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-green-400" id="totalReports">-</div>
+                            <div class="text-xs text-gray-500">Total Reports</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Feature Cards -->
-    <section class="max-w-6xl mx-auto px-6 py-24">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center">Two problems. One platform.</h2>
-        <p class="text-gray-500 text-center mb-16 max-w-xl mx-auto">Tag civic issues on the map. Build evidence. Drive accountability.</p>
+    <section class="bg-gray-950 py-24">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-center">Two problems. One platform.</h2>
+            <p class="text-gray-500 text-center mb-16 max-w-xl mx-auto">Tag civic issues on the map. Build evidence. Drive accountability.</p>
 
-        <div class="grid md:grid-cols-2 gap-8">
+            <div class="grid md:grid-cols-2 gap-8">
+                <a href="/potholes" class="card-hover block bg-gray-900 rounded-2xl p-8 border border-gray-800 hover:border-orange-500/30">
+                    <div class="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">SpotHole</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Spot a pothole? Drop a pin. Select severity. Done. Your report joins a real-time map
+                        that shows exactly where Nagpur's roads need fixing.
+                    </p>
+                    <div class="flex items-center gap-2 text-orange-400 font-semibold">
+                        Open Map
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </a>
 
-            <!-- Pothole Card -->
-            <a href="/potholes" class="card-hover block bg-gray-900 rounded-2xl p-8 border border-gray-800 glow-orange">
-                <div class="w-14 h-14 rounded-xl bg-orange-500 bg-opacity-10 flex items-center justify-center mb-6">
-                    <svg class="w-7 h-7 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                </div>
-                <h3 class="text-2xl font-bold mb-3">Report Potholes</h3>
-                <p class="text-gray-400 leading-relaxed mb-6">
-                    Spot a pothole? Drop a pin. Select severity. Done. Your report joins a real-time map
-                    that shows exactly where Nagpur's roads need fixing.
-                </p>
-                <div class="flex items-center gap-2 text-orange-400 font-semibold">
-                    Open Map
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </div>
-            </a>
-
-            <!-- Parking Card -->
-            <a href="/parking" class="card-hover block bg-gray-900 rounded-2xl p-8 border border-gray-800 glow-blue">
-                <div class="w-14 h-14 rounded-xl bg-blue-500 bg-opacity-10 flex items-center justify-center mb-6">
-                    <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                </div>
-                <h3 class="text-2xl font-bold mb-3">Report Bad Parking</h3>
-                <p class="text-gray-400 leading-relaxed mb-6">
-                    Vehicles blocking the road? Tag the spot. Describe the problem.
-                    Track hotspots and see whether they improve over time.
-                </p>
-                <div class="flex items-center gap-2 text-blue-400 font-semibold">
-                    Open Map
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </div>
-            </a>
+                <a href="/parking" class="card-hover block bg-gray-900 rounded-2xl p-8 border border-gray-800 hover:border-blue-500/30">
+                    <div class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">KnowParking</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Vehicles blocking the road? Tag the spot. Describe the problem.
+                        Track hotspots and see whether they improve over time.
+                    </p>
+                    <div class="flex items-center gap-2 text-blue-400 font-semibold">
+                        Open Map
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </div>
+                </a>
+            </div>
         </div>
     </section>
 
     <!-- How It Works -->
-    <section class="max-w-6xl mx-auto px-6 py-24 border-t border-gray-800">
-        <h2 class="text-3xl md:text-4xl font-bold mb-16 text-center">How it works</h2>
-        <div class="grid md:grid-cols-3 gap-12">
-            <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">1</div>
-                <h3 class="text-xl font-semibold mb-2">Pin the location</h3>
-                <p class="text-gray-500">Click on the map or use GPS to mark the exact spot.</p>
-            </div>
-            <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">2</div>
-                <h3 class="text-xl font-semibold mb-2">Describe the issue</h3>
-                <p class="text-gray-500">Select severity and add a description. Takes 10 seconds.</p>
-            </div>
-            <div class="text-center">
-                <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">3</div>
-                <h3 class="text-xl font-semibold mb-2">Build the evidence</h3>
-                <p class="text-gray-500">Reports aggregate into heatmaps and data that authorities can act on.</p>
+    <section class="bg-gray-950 border-t border-gray-800 py-24">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-3xl md:text-4xl font-bold mb-16 text-center">How it works</h2>
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">1</div>
+                    <h3 class="text-xl font-semibold mb-2">Pin the location</h3>
+                    <p class="text-gray-500">Click on the map or use GPS to mark the exact spot.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">2</div>
+                    <h3 class="text-xl font-semibold mb-2">Describe the issue</h3>
+                    <p class="text-gray-500">Select severity and add a description. Takes 10 seconds.</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 text-2xl font-bold text-orange-400">3</div>
+                    <h3 class="text-xl font-semibold mb-2">Build the evidence</h3>
+                    <p class="text-gray-500">Reports aggregate into data that authorities can act on.</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="border-t border-gray-800 py-12">
+    <footer class="bg-gray-950 border-t border-gray-800 py-12">
         <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded bg-orange-500 flex items-center justify-center text-xs font-bold">M</div>
-                <span class="font-semibold">MapMyNagpur</span>
+                <div class="w-6 h-6 rounded bg-orange-500 flex items-center justify-center text-xs font-bold">S</div>
+                <span class="font-semibold">SadakChaApp</span>
             </div>
             <p class="text-gray-600 text-sm">Built by citizens of Nagpur. Data is public. Code is open.</p>
             <div class="flex gap-6">
-                <a href="/potholes" class="text-sm text-gray-500 hover:text-white transition">Potholes</a>
-                <a href="/parking" class="text-sm text-gray-500 hover:text-white transition">Parking</a>
+                <a href="/potholes" class="text-sm text-gray-500 hover:text-white transition">SpotHole</a>
+                <a href="/parking" class="text-sm text-gray-500 hover:text-white transition">KnowParking</a>
             </div>
         </div>
     </footer>
 
     <script>
-        // Load live stats
         async function loadStats() {
             try {
                 const [pRes, pkRes] = await Promise.all([

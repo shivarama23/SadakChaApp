@@ -16,6 +16,7 @@ function initMap() {
     markerClusterGroup = L.markerClusterGroup();
     map.addLayer(markerClusterGroup);
     map.on('click', handleMapClick);
+    setupLongPress(map);
     loadReports();
     loadStats();
     setInterval(loadReports, 30000);
@@ -46,11 +47,23 @@ function addMarker(zone) {
     const emojis = { LOW: '🟢', MODERATE: '🟡', SEVERE: '🔴' };
     const labels = { LOW: 'Minor', MODERATE: 'Partial Block', SEVERE: 'Full Block' };
 
-    const marker = L.circleMarker([zone.lat, zone.lon], {
-        radius: 8, fillColor: colors[zone.severity] || '#3B82F6',
-        color: colors[zone.severity] || '#3B82F6',
-        weight: 2, opacity: 0.8, fillOpacity: 0.7
+    const color = colors[zone.severity] || '#3B82F6';
+    const pinIcon = L.divIcon({
+        className: 'severity-pin',
+        html: `<div style="
+            background-color: ${color};
+            width: 24px; height: 24px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -24]
     });
+
+    const marker = L.marker([zone.lat, zone.lon], { icon: pinIcon });
 
     marker.bindPopup(`
         <div>
@@ -62,47 +75,74 @@ function addMarker(zone) {
     markerClusterGroup.addLayer(marker);
 }
 
-// --- Pin & Report Flow (same pattern as potholes) ---
+// Center pin selection mode (Uber-style)
+let pinActive = false;
+let centerPinEl = null;
+let confirmBarEl = null;
 
-let selectedLocationMarker = null;
+function createCenterPinUI() {
+    centerPinEl = document.createElement('div');
+    centerPinEl.id = 'centerPin';
+    centerPinEl.innerHTML = `<svg width="36" height="48" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <filter id="shadow-b"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter>
+        <path d="M18 0C8.06 0 0 8.06 0 18c0 12.6 18 30 18 30s18-17.4 18-30C36 8.06 27.94 0 18 0z" fill="#3B82F6" filter="url(#shadow-b)"/>
+        <circle cx="18" cy="18" r="8" fill="white"/>
+    </svg>`;
+    document.getElementById('map').parentElement.appendChild(centerPinEl);
+
+    confirmBarEl = document.createElement('div');
+    confirmBarEl.id = 'confirmBar';
+    confirmBarEl.innerHTML = `
+        <span id="pinCoords"></span>
+        <div>
+            <button id="cancelPinBtn">Cancel</button>
+            <button id="confirmPinBtn">KnowParking Here</button>
+        </div>
+    `;
+    document.getElementById('map').parentElement.appendChild(confirmBarEl);
+
+    document.getElementById('cancelPinBtn').addEventListener('click', deactivatePin);
+    document.getElementById('confirmPinBtn').addEventListener('click', () => {
+        const center = map.getCenter();
+        deactivatePin();
+        openReportModal(center.lat, center.lng);
+    });
+}
+
+function activatePin(lat, lon) {
+    if (!centerPinEl) createCenterPinUI();
+    pinActive = true;
+    centerPinEl.classList.add('active');
+    confirmBarEl.classList.add('active');
+    if (lat !== undefined && lon !== undefined) {
+        map.setView([lat, lon], map.getZoom());
+    }
+    updatePinCoords();
+}
+
+function deactivatePin() {
+    pinActive = false;
+    if (centerPinEl) centerPinEl.classList.remove('active');
+    if (confirmBarEl) confirmBarEl.classList.remove('active');
+}
+
+function updatePinCoords() {
+    if (!pinActive) return;
+    const center = map.getCenter();
+    const el = document.getElementById('pinCoords');
+    if (el) el.textContent = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+}
 
 function handleMapClick(e) {
-    showLocationPin(e.latlng.lat, e.latlng.lng);
+    activatePin(e.latlng.lat, e.latlng.lng);
 }
 
 function showLocationPin(lat, lon) {
-    if (selectedLocationMarker) map.removeLayer(selectedLocationMarker);
-
-    selectedLocationMarker = L.marker([lat, lon], { draggable: true, autoPan: true }).addTo(map);
-    const icon = L.divIcon({
-        className: 'custom-pin',
-        html: `<div style="background-color:#3B82F6;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -30]
-    });
-    selectedLocationMarker.setIcon(icon);
-
-    function updatePopup(lat, lon) {
-        selectedLocationMarker.bindPopup(`
-            <div style="text-align:center;min-width:180px;">
-                <strong>📍 Selected Location</strong><br>
-                <small style="color:#666;">${lat.toFixed(5)}, ${lon.toFixed(5)}</small><br>
-                <small style="color:#888;">Drag pin to adjust</small><br>
-                <button onclick="openReportModal(${lat},${lon});removeSelectedPin();"
-                        style="margin-top:10px;padding:8px 16px;background:#3B82F6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
-                    Report Bad Parking Here
-                </button>
-            </div>
-        `).openPopup();
-    }
-    updatePopup(lat, lon);
-    selectedLocationMarker.on('dragend', e => {
-        const p = e.target.getLatLng();
-        updatePopup(p.lat, p.lng);
-    });
+    activatePin(lat, lon);
 }
 
 function removeSelectedPin() {
-    if (selectedLocationMarker) { map.removeLayer(selectedLocationMarker); selectedLocationMarker = null; }
+    deactivatePin();
 }
 
 function openReportModal(lat, lon) {
@@ -216,7 +256,7 @@ function geolocate() {
                     <small>Accuracy: ~${Math.round(acc)}m</small><br>
                     <button onclick="openReportModal(${lat},${lon})"
                             style="margin-top:8px;padding:6px 12px;background:#3B82F6;color:white;border:none;border-radius:4px;cursor:pointer;">
-                        Report Bad Parking Here
+                        KnowParking Here
                     </button>
                 </div>
             `).openPopup();
@@ -240,6 +280,34 @@ function geolocate() {
     );
 }
 
+// Long-press support for mobile (hold 500ms to drop pin)
+function setupLongPress(map) {
+    let pressTimer = null;
+    let startLatLng = null;
+
+    function clearPress() {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+
+    map.getContainer().addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) { clearPress(); return; }
+        const touch = e.touches[0];
+        startLatLng = map.containerPointToLatLng(L.point(touch.clientX - map.getContainer().getBoundingClientRect().left, touch.clientY - map.getContainer().getBoundingClientRect().top));
+        pressTimer = setTimeout(() => {
+            if (startLatLng) {
+                map.dragging.disable();
+                showLocationPin(startLatLng.lat, startLatLng.lng);
+                setTimeout(() => map.dragging.enable(), 100);
+            }
+            pressTimer = null;
+        }, 500);
+    }, { passive: true });
+
+    map.getContainer().addEventListener('touchmove', clearPress, { passive: true });
+    map.getContainer().addEventListener('touchend', clearPress, { passive: true });
+    map.getContainer().addEventListener('touchcancel', clearPress, { passive: true });
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
@@ -247,8 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancelBtn').addEventListener('click', closeReportModal);
     document.getElementById('submitBtn').addEventListener('click', submitReport);
     document.getElementById('reportBtn').addEventListener('click', () => {
-        const c = map.getCenter();
-        openReportModal(c.lat, c.lng);
+        activatePin();
     });
     document.getElementById('geolocateBtn').addEventListener('click', geolocate);
 
@@ -264,5 +331,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.id === 'reportModal') closeReportModal();
     });
 
-    map.on('moveend', loadReports);
+    // Stats panel toggle
+    const statsH3 = document.querySelector('.stats-panel h3');
+    if (statsH3) {
+        statsH3.addEventListener('click', () => {
+            document.getElementById('statsPanel').classList.toggle('collapsed');
+        });
+        if (window.innerWidth <= 600) {
+            document.getElementById('statsPanel').classList.add('collapsed');
+        }
+    }
+
+    map.on('movestart', () => {
+        if (centerPinEl) centerPinEl.classList.add('lifting');
+    });
+    map.on('moveend', () => {
+        if (centerPinEl) centerPinEl.classList.remove('lifting');
+        loadReports();
+        updatePinCoords();
+    });
 });

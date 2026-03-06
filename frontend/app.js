@@ -23,8 +23,9 @@ function initMap() {
     markerClusterGroup = L.markerClusterGroup();
     map.addLayer(markerClusterGroup);
 
-    // Handle map clicks for reporting
+    // Handle map clicks and long-press for reporting
     map.on('click', handleMapClick);
+    setupLongPress(map);
 
     // Load initial potholes
     loadPotholes();
@@ -86,14 +87,22 @@ function addPotholeMarker(pothole) {
             break;
     }
 
-    const marker = L.circleMarker([lat, lon], {
-        radius: 8,
-        fillColor: markerColor,
-        color: markerColor,
-        weight: 2,
-        opacity: 0.8,
-        fillOpacity: 0.7
+    const pinIcon = L.divIcon({
+        className: 'severity-pin',
+        html: `<div style="
+            background-color: ${markerColor};
+            width: 24px; height: 24px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -24]
     });
+
+    const marker = L.marker([lat, lon], { icon: pinIcon });
 
     const popupContent = `
         <div>
@@ -107,78 +116,79 @@ function addPotholeMarker(pothole) {
     markerClusterGroup.addLayer(marker);
 }
 
-// Selected location marker (for reporting)
-let selectedLocationMarker = null;
+// Center pin selection mode (Uber-style)
+let pinActive = false;
+let centerPinEl = null;
+let confirmBarEl = null;
+
+function createCenterPinUI() {
+    // Fixed center pin
+    centerPinEl = document.createElement('div');
+    centerPinEl.id = 'centerPin';
+    centerPinEl.innerHTML = `<svg width="36" height="48" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <filter id="shadow-r"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/></filter>
+        <path d="M18 0C8.06 0 0 8.06 0 18c0 12.6 18 30 18 30s18-17.4 18-30C36 8.06 27.94 0 18 0z" fill="#FF6B6B" filter="url(#shadow-r)"/>
+        <circle cx="18" cy="18" r="8" fill="white"/>
+    </svg>`;
+    document.getElementById('map').parentElement.appendChild(centerPinEl);
+
+    // Confirm bar at bottom
+    confirmBarEl = document.createElement('div');
+    confirmBarEl.id = 'confirmBar';
+    confirmBarEl.innerHTML = `
+        <span id="pinCoords"></span>
+        <div>
+            <button id="cancelPinBtn">Cancel</button>
+            <button id="confirmPinBtn">SpotHole Here</button>
+        </div>
+    `;
+    document.getElementById('map').parentElement.appendChild(confirmBarEl);
+
+    document.getElementById('cancelPinBtn').addEventListener('click', deactivatePin);
+    document.getElementById('confirmPinBtn').addEventListener('click', () => {
+        const center = map.getCenter();
+        deactivatePin();
+        openReportModal(center.lat, center.lng);
+    });
+}
+
+function activatePin(lat, lon) {
+    if (!centerPinEl) createCenterPinUI();
+    pinActive = true;
+    centerPinEl.classList.add('active');
+    confirmBarEl.classList.add('active');
+    if (lat !== undefined && lon !== undefined) {
+        map.setView([lat, lon], map.getZoom());
+    }
+    updatePinCoords();
+}
+
+function deactivatePin() {
+    pinActive = false;
+    if (centerPinEl) centerPinEl.classList.remove('active');
+    if (confirmBarEl) confirmBarEl.classList.remove('active');
+}
+
+function updatePinCoords() {
+    if (!pinActive) return;
+    const center = map.getCenter();
+    const el = document.getElementById('pinCoords');
+    if (el) el.textContent = `${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`;
+}
 
 // Handle map click for reporting
 function handleMapClick(e) {
-    const lat = e.latlng.lat;
-    const lon = e.latlng.lng;
-    showLocationPin(lat, lon);
+    activatePin(e.latlng.lat, e.latlng.lng);
 }
 
-// Show a draggable pin at the selected location
+// Alias for long-press compatibility
 function showLocationPin(lat, lon) {
-    // Remove previous selected location marker if exists
-    if (selectedLocationMarker) {
-        map.removeLayer(selectedLocationMarker);
-    }
-
-    // Create a red draggable marker
-    selectedLocationMarker = L.marker([lat, lon], {
-        draggable: true,
-        autoPan: true
-    }).addTo(map);
-
-    // Custom red icon
-    const redIcon = L.divIcon({
-        className: 'custom-pin',
-        html: `<div style="
-            background-color: #FF6B6B;
-            width: 30px;
-            height: 30px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 3px solid #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        "></div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30]
-    });
-    selectedLocationMarker.setIcon(redIcon);
-
-    // Update popup content with current coordinates
-    function updatePopup(lat, lon) {
-        selectedLocationMarker.bindPopup(`
-            <div style="text-align: center; min-width: 180px;">
-                <strong>📍 Selected Location</strong><br>
-                <small style="color: #666;">${lat.toFixed(5)}, ${lon.toFixed(5)}</small><br>
-                <small style="color: #888;">Drag pin to adjust</small><br>
-                <button onclick="openReportModal(${lat}, ${lon}); removeSelectedPin();"
-                        style="margin-top: 10px; padding: 8px 16px; background: #FF6B6B; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                    Report Pothole Here
-                </button>
-            </div>
-        `).openPopup();
-    }
-
-    // Show initial popup
-    updatePopup(lat, lon);
-
-    // Update popup when marker is dragged
-    selectedLocationMarker.on('dragend', function(e) {
-        const newPos = e.target.getLatLng();
-        updatePopup(newPos.lat, newPos.lng);
-    });
+    activatePin(lat, lon);
 }
 
-// Remove selected location pin
+// Remove selected pin (called from other places)
 function removeSelectedPin() {
-    if (selectedLocationMarker) {
-        map.removeLayer(selectedLocationMarker);
-        selectedLocationMarker = null;
-    }
+    deactivatePin();
 }
 
 // Open report modal
@@ -375,7 +385,7 @@ function geolocate() {
                     <small>Accuracy: ~${Math.round(accuracy)}m</small><br>
                     <button onclick="openReportModal(${lat}, ${lon})"
                             style="margin-top: 8px; padding: 6px 12px; background: #FF6B6B; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Report Pothole Here
+                        SpotHole Here
                     </button>
                 </div>
             `).openPopup();
@@ -428,6 +438,34 @@ function showError(message) {
     statusEl.style.display = 'block';
 }
 
+// Long-press support for mobile (hold 500ms to drop pin)
+function setupLongPress(map) {
+    let pressTimer = null;
+    let startLatLng = null;
+
+    function clearPress() {
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+
+    map.getContainer().addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) { clearPress(); return; }
+        const touch = e.touches[0];
+        startLatLng = map.containerPointToLatLng(L.point(touch.clientX - map.getContainer().getBoundingClientRect().left, touch.clientY - map.getContainer().getBoundingClientRect().top));
+        pressTimer = setTimeout(() => {
+            if (startLatLng) {
+                map.dragging.disable();
+                showLocationPin(startLatLng.lat, startLatLng.lng);
+                setTimeout(() => map.dragging.enable(), 100);
+            }
+            pressTimer = null;
+        }, 500);
+    }, { passive: true });
+
+    map.getContainer().addEventListener('touchmove', clearPress, { passive: true });
+    map.getContainer().addEventListener('touchend', clearPress, { passive: true });
+    map.getContainer().addEventListener('touchcancel', clearPress, { passive: true });
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize map
@@ -445,9 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelBtn.addEventListener('click', closeReportModal);
     submitBtn.addEventListener('click', submitReport);
     reportBtn.addEventListener('click', () => {
-        // Use map center as default location
-        const center = map.getCenter();
-        openReportModal(center.lat, center.lng);
+        activatePin();
     });
     geolocateBtn.addEventListener('click', geolocate);
 
@@ -467,6 +503,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Reload potholes when map is dragged/zoomed
-    map.on('moveend', loadPotholes);
+    // Stats panel toggle
+    const statsH3 = document.querySelector('.stats-panel h3');
+    if (statsH3) {
+        statsH3.addEventListener('click', () => {
+            document.getElementById('statsPanel').classList.toggle('collapsed');
+        });
+        // Start collapsed on mobile
+        if (window.innerWidth <= 600) {
+            document.getElementById('statsPanel').classList.add('collapsed');
+        }
+    }
+
+    // Lift pin while dragging, drop on stop
+    map.on('movestart', () => {
+        if (centerPinEl) centerPinEl.classList.add('lifting');
+    });
+    map.on('moveend', () => {
+        if (centerPinEl) centerPinEl.classList.remove('lifting');
+        loadPotholes();
+        updatePinCoords();
+    });
 });

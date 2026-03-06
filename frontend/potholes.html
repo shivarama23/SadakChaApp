@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MapMyPothole - Report potholes in Nagpur">
-    <title>MapMyPothole - Report Potholes</title>
+    <meta name="description" content="SpotHole by SadakChaApp - Report potholes in Nagpur">
+    <title>SpotHole - SadakChaApp</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -23,7 +23,7 @@
     <a href="/" class="back-btn" title="Back to home">← Home</a>
 
     <!-- Report Button -->
-    <button id="reportBtn" class="report-btn" title="Click map to report, or use this button">📍 Report Pothole</button>
+    <button id="reportBtn" class="report-btn" title="Click map to report, or use this button">📍 SpotHole</button>
 
     <!-- Geolocation Button -->
     <button id="geolocateBtn" class="geolocate-btn" title="Center map on your location">🎯 Use My Location</button>
@@ -32,7 +32,7 @@
     <div id="reportModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
-            <h2>Report a Pothole</h2>
+            <h2>SpotHole - Report a Pothole</h2>
 
             <div class="modal-section">
                 <p><strong>Location:</strong> <span id="modalCoords">--</span></p>
@@ -66,7 +66,7 @@
 
     <!-- Stats Panel -->
     <div id="statsPanel" class="stats-panel">
-        <h3>📊 Stats</h3>
+        <h3>📊 SpotHole Stats</h3>
         <p>Total: <strong id="totalCount">0</strong></p>
         <p>🟢 Low: <strong id="lowCount">0</strong></p>
         <p>🟡 Medium: <strong id="mediumCount">0</strong></p>
